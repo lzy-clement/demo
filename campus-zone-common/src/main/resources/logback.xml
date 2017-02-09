@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Reference Manual http://logback.qos.ch/manual/index.html -->
+<configuration>
+
+    <property resource="deploy_config.properties"/>
+
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d %5p [%t] %caller{1} %msg %n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="Root" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}/server.log.%d{yyyy-MM-dd}</fileNamePattern>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%msg %n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="Exception" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}/exception/exception.log.%d{yyyy-MM-dd}</fileNamePattern>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>%msg %n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="${log.level}">
+        <appender-ref ref="Console"/>
+        <appender-ref ref="Root"/>
+        <appender-ref ref="Exception"/>
+    </root>
+
+    <appender name="redisMissAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}/redisMiss/redisMiss.log.%d{yyyy-MM-dd}</fileNamePattern>
+            <maxHistory>14</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d %msg %n</pattern>
+        </encoder>
+    </appender>
+    <logger name="redisMissLogger" level="info" additivity="false">
+        <appender-ref ref="redisMissAppender"/>
+    </logger>
+
+    <appender name="rediesPerfFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}/redies/perfStats.log.%d{yyyy-MM-dd}</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%msg %n</pattern>
+        </encoder>
+    </appender>
+    <appender name="rediesCoalescingStatistics" class="org.perf4j.logback.AsyncCoalescingStatisticsAppender">
+        <param name="TimeSlice" value="60000"/>
+        <appender-ref ref="rediesPerfFileAppender"/>
+    </appender>
+    <logger name="rediesTimingLogger" level="info" additivity="false">
+        <appender-ref ref="rediesCoalescingStatistics"/>
+    </logger>
+
+    <appender name="webPerfFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}/webperf/perfStats.log.%d{yyyy-MM-dd}</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%msg %n</pattern>
+        </encoder>
+    </appender>
+    <appender name="webCoalescingStatistics" class="org.perf4j.logback.AsyncCoalescingStatisticsAppender">
+        <param name="TimeSlice" value="60000"/>
+        <appender-ref ref="webPerfFileAppender"/>
+    </appender>
+    <logger name="webTimingLogger" level="info" additivity="false">
+        <appender-ref ref="webCoalescingStatistics"/>
+    </logger>
+
+</configuration>
